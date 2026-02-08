@@ -1,0 +1,25 @@
+# RENAME this file to "terraform.tfvars" and fill in your values.
+# This file stays on your computer. Terraform reads it and sends the values 
+# securely to AWS SSM Parameter Store.
+
+key_name    = "your-aws-ssh-key-name"
+alert_email = "your-email@example.com" # <--- New: For Budget & Downtime Alerts
+
+# Telegram Secrets
+telegram_api_id         = "123456"
+telegram_api_hash       = "abcdef1234567890"
+telegram_session_string = "1ApWap..." # The long string from generate_session.py
+
+# Configuration
+target_keywords = "urgent,help,error"
+target_chats    = "My Group Chat, -100123456"
+
+# Notifications (Fill one section)
+# Option A: Twilio
+twilio_account_sid   = "AC..."
+twilio_auth_token    = "..."
+twilio_whatsapp_from = "whatsapp:+14155238886"
+twilio_whatsapp_to   = "whatsapp:+1234567890"
+
+# Option B: CallMeBot
+# whatsapp_webhook_url = "https://api.callmebot.com..."
