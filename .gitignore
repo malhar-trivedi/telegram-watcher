@@ -17,3 +17,6 @@ terraform.tfvars
 
 # Keys
 *.pem
+
+# Binaries
+terraform/terraform
