@@ -5,7 +5,7 @@ A robust, cloud-native Telegram monitoring bot that listens to specific chats fo
 ## 🚀 Features
 
 - **Real-time Monitoring**: Uses Telethon (MTProto) to listen for messages in specific Telegram groups or channels.
-- **Instant Alerts**: Sends notifications to WhatsApp via Twilio or CallMeBot.
+- **Instant Alerts**: Sends notifications to Telegram (recommended) or WhatsApp (via Twilio/CallMeBot).
 - **Production-Ready Infrastructure**:
   - **AWS EC2**: Runs in a lightweight, self-healing Docker container.
   - **Terraform**: Entire infrastructure is managed as code.
@@ -24,7 +24,13 @@ A robust, cloud-native Telegram monitoring bot that listens to specific chats fo
 - **Docker** installed.
 - **Telegram API Credentials**: Get your `API_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org).
 
-### 2. Generate Telegram Session
+### 2. Setup Telegram Bot Notifications (Recommended)
+You can receive alerts directly on your Telegram account:
+1.  **Create a Bot**: Message [@BotFather](https://t.me/BotFather) and use `/newbot`. Note the `API Token`.
+2.  **Get Your ID**: Message [@userinfobot](https://t.me/userinfobot) to get your numeric `Chat ID`.
+3.  **Start the Bot**: Open a chat with your new bot and click **Start**.
+
+### 3. Generate Telegram Session
 Telegram requires a session string for persistent login.
 ```bash
 cd telegram_watcher
@@ -33,7 +39,7 @@ python generate_session.py
 ```
 Follow the prompts to log in. Copy the **string session** printed at the end.
 
-### 3. Configure Terraform
+### 4. Configure Terraform
 Navigate to the `terraform` directory and create your variables file:
 ```bash
 cd terraform
@@ -42,12 +48,14 @@ cp terraform.tfvars.example terraform.tfvars
 Edit `terraform.tfvars` and fill in:
 - `telegram_api_id`
 - `telegram_api_hash`
-- `telegram_session_string` (from step 2)
+- `telegram_session_string` (from step 3)
 - `target_chats` (Comma-separated list of Chat Titles or IDs)
 - `alert_email` (To receive budget and downtime alerts)
-- `twilio_...` (If using Twilio for WhatsApp)
+- `telegram_bot_token` (Required for Telegram Bot alerts)
+- `telegram_chat_id`
+- `twilio_...` (Optional: If using Twilio for WhatsApp)
 
-### 4. Deploy
+### 5. Deploy
 Run the deployment script from the root directory:
 ```bash
 ./deploy.sh

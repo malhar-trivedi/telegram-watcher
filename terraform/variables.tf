@@ -8,6 +8,19 @@ variable "alert_email" {
   type        = string
 }
 
+variable "telegram_bot_token" {
+  description = "Telegram Bot Token for notifications"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "telegram_chat_id" {
+  description = "Telegram Chat ID for notifications"
+  type        = string
+  default     = ""
+}
+
 # --- Secrets to be stored in SSM Parameter Store ---
 
 variable "telegram_api_id" {

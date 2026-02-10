@@ -8,6 +8,8 @@ alert_email = "your-email@example.com" # <--- New: For Budget & Downtime Alerts
 # Telegram Secrets
 telegram_api_id         = "123456"
 telegram_api_hash       = "abcdef1234567890"
+telegram_bot_token      = "123456789:ABCDEF..."
+telegram_chat_id        = "987654321"
 telegram_session_string = "1ApWap..." # The long string from generate_session.py
 
 # Configuration

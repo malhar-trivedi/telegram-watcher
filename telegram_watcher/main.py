@@ -25,30 +25,33 @@ async def daily_summary_loop():
     """
     Sends a summary message periodically to let the user know the bot is alive.
     """
+    # Send one immediately on startup for confirmation
+    print("Sending startup summary...")
+    send_summary_notification("Startup")
+
     while True:
         # Wait for interval (default 24h)
-        # We wait first so we don't spam on every restart, or we can send one immediately to confirm startup.
-        # Let's wait 24h.
         await asyncio.sleep(SUMMARY_INTERVAL_HOURS * 3600)
+        print("Sending scheduled daily summary...")
+        send_summary_notification("Daily")
 
-        now = datetime.datetime.now()
-        uptime = now - STATS['start_time'] if STATS['start_time'] else "N/A"
+def send_summary_notification(label):
+    now = datetime.datetime.now()
+    uptime = now - STATS['start_time'] if STATS['start_time'] else "N/A"
 
-        summary_msg = (
-            f"ℹ️ Telegram Watcher Daily Summary\n"
-            f"Status: Running ✅\n"
-            f"Uptime: {uptime}\n"
-            f"Messages Scanned: {STATS['messages_seen']}\n"
-            f"Alerts Sent: {STATS['alerts_sent']}"
-        )
+    summary_msg = (
+        f"ℹ️ Telegram Watcher {label} Summary\n"
+        f"Status: Running ✅\n"
+        f"Uptime: {uptime}\n"
+        f"Messages Scanned: {STATS['messages_seen']}\n"
+        f"Alerts Sent: {STATS['alerts_sent']}"
+    )
 
-        print("Sending daily summary...")
-        send_whatsapp_alert(summary_msg)
+    send_whatsapp_alert(summary_msg)
 
-        # Reset counters if desired?
-        # Usually daily summaries reset day counts.
-        STATS['messages_seen'] = 0
-        STATS['alerts_sent'] = 0
+    # Reset counters after summary
+    STATS['messages_seen'] = 0
+    STATS['alerts_sent'] = 0
 
 async def heartbeat_loop():
     """

@@ -106,6 +106,8 @@ locals {
     TWILIO_WHATSAPP_FROM    = var.twilio_whatsapp_from
     TWILIO_WHATSAPP_TO      = var.twilio_whatsapp_to
     WHATSAPP_WEBHOOK_URL    = var.whatsapp_webhook_url
+    TELEGRAM_BOT_TOKEN      = var.telegram_bot_token
+    TELEGRAM_CHAT_ID        = var.telegram_chat_id
   })
 }
 
