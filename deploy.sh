@@ -16,7 +16,7 @@ aws ecr get-login-password --region us-east-1 | docker login --username AWS --pa
 
 # 3. Build & Push
 echo "📦 Building & Pushing Image..."
-docker build --platform linux/amd64 -t telegram_watcher ./telegram_watcher
+docker build --platform linux/arm64 -t telegram_watcher ./telegram_watcher
 docker tag telegram_watcher:latest $ECR_URL:latest
 docker push $ECR_URL:latest
 

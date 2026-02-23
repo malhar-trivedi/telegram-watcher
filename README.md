@@ -7,7 +7,8 @@ A robust, cloud-native Telegram monitoring bot that listens to specific chats fo
 - **Real-time Monitoring**: Uses Telethon (MTProto) to listen for messages in specific Telegram groups or channels.
 - **Instant Alerts**: Sends notifications to Telegram (recommended) or WhatsApp (via Twilio/CallMeBot).
 - **Production-Ready Infrastructure**:
-  - **AWS EC2**: Runs in a lightweight, self-healing Docker container.
+  - **AWS EC2 (Graviton/ARM64)**: Runs on cost-optimized `t4g.micro` instances for better performance and lower cost.
+  - **Docker**: Runs in a lightweight, self-healing container.
   - **Terraform**: Entire infrastructure is managed as code.
   - **AWS SSM**: Secrets (API keys, session strings) are stored securely in AWS Parameter Store.
   - **CloudWatch Logs**: Centralized logging with 1-week retention.
@@ -62,9 +63,15 @@ Run the deployment script from the root directory:
 ```
 This script will:
 1. Initialize and apply Terraform infrastructure.
-2. Build the Docker image (targeting `linux/amd64`).
+2. Build the Docker image for **ARM64** (required for `t4g` instances).
 3. Push the image to AWS ECR.
 4. Trigger the EC2 instance to pull and run the latest bot.
+
+#### Manual Build (Optional)
+If you want to build the image manually for the Graviton instance:
+```bash
+docker build --platform linux/arm64 -t telegram_watcher ./telegram_watcher
+```
 
 ---
 
