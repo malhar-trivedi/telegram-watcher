@@ -7,7 +7,7 @@ A robust, cloud-native Telegram monitoring bot that listens to specific chats fo
 - **Real-time Monitoring**: Uses Telethon (MTProto) to listen for messages in specific Telegram groups or channels.
 - **Instant Alerts**: Sends notifications to Telegram (recommended) or WhatsApp (via Twilio/CallMeBot).
 - **Production-Ready Infrastructure**:
-  - **AWS EC2 (Graviton/ARM64)**: Runs on cost-optimized `t4g.micro` instances for better performance and lower cost.
+  - **AWS EC2 (Graviton/ARM64)**: Runs on cost-optimized `t4g.nano` instances for better performance and lower cost.
   - **Docker**: Runs in a lightweight, self-healing container.
   - **Terraform**: Entire infrastructure is managed as code.
   - **AWS SSM**: Secrets (API keys, session strings) are stored securely in AWS Parameter Store.

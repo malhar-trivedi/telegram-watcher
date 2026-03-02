@@ -224,7 +224,7 @@ data "aws_ami" "ubuntu_arm" {
 
 resource "aws_instance" "server" {
   ami           = data.aws_ami.ubuntu_arm.id
-  instance_type = "t4g.micro"
+  instance_type = "t4g.nano"
   key_name      = aws_key_pair.kp.key_name
   vpc_security_group_ids = [aws_security_group.sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
