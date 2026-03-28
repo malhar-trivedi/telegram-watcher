@@ -19,6 +19,10 @@ if not all([API_ID, API_HASH, SESSION_STRING]):
     print("Error: TELEGRAM_API_ID, TELEGRAM_API_HASH, and TELEGRAM_SESSION_STRING must be set.")
     exit(1)
 
+# --- Resilience constants ---
+MAX_RETRIES = 10
+INITIAL_BACKOFF = 5  # seconds
+
 client = TelegramClient(StringSession(SESSION_STRING), int(API_ID), API_HASH)
 
 async def daily_summary_loop():
@@ -53,14 +57,18 @@ def send_summary_notification(label):
     STATS['messages_seen'] = 0
     STATS['alerts_sent'] = 0
 
-async def heartbeat_loop():
+async def heartbeat_loop(telegram_client):
     """
-    Updates a local file timestamp every minute so Docker can check health.
+    Updates heartbeat ONLY if the Telegram client is connected.
+    If disconnected, stops writing → healthcheck detects stale file → Docker restarts.
     """
     while True:
         try:
-            with open("/tmp/heartbeat", "w") as f:
-                f.write(str(datetime.datetime.now()))
+            if telegram_client.is_connected():
+                with open("/tmp/heartbeat", "w") as f:
+                    f.write(str(datetime.datetime.now()))
+            else:
+                print("⚠️ Heartbeat skipped: Telegram client not connected")
         except Exception as e:
             print(f"Error writing heartbeat: {e}")
 
@@ -68,17 +76,38 @@ async def heartbeat_loop():
 
 async def main():
     print("Starting Telegram Watcher...")
-    await client.start()
+    retries = 0
 
-    # Register event handlers
-    register_handlers(client)
+    while retries < MAX_RETRIES:
+        try:
+            await client.start()
+            register_handlers(client)
 
-    # Start background tasks
-    client.loop.create_task(daily_summary_loop())
-    client.loop.create_task(heartbeat_loop())
+            # Start background tasks on first connect
+            if retries == 0:
+                client.loop.create_task(daily_summary_loop())
+                client.loop.create_task(heartbeat_loop(client))
 
-    print("Telegram Watcher is running and listening for messages...")
-    await client.run_until_disconnected()
+            print("Telegram Watcher is running and listening for messages...")
+            await client.run_until_disconnected()
+
+            # If we get here, the connection dropped cleanly
+            print("⚠️ Disconnected from Telegram. Attempting reconnect...")
+            send_whatsapp_alert("⚠️ Telegram Watcher disconnected! Attempting auto-reconnect...")
+
+        except Exception as e:
+            print(f"❌ Connection error: {e}")
+            send_whatsapp_alert(f"❌ Telegram Watcher error: {e}. Retrying...")
+
+        retries += 1
+        backoff = min(INITIAL_BACKOFF * (2 ** retries), 300)  # max 5 min
+        print(f"Reconnecting in {backoff}s (attempt {retries}/{MAX_RETRIES})...")
+        await asyncio.sleep(backoff)
+
+    # Exhausted all retries — exit so Docker restarts the entire container
+    print("💀 Max retries exhausted. Exiting for Docker restart...")
+    send_whatsapp_alert("💀 Telegram Watcher: max reconnect retries exhausted. Container will restart.")
+    exit(1)
 
 if __name__ == '__main__':
     client.loop.run_until_complete(main())

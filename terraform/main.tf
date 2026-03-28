@@ -314,6 +314,59 @@ resource "aws_instance" "server" {
   }
 }
 
+# --- Resilience: CloudWatch Metric Filter + Alarms ---
+
+# Step 4 — Metric Filter: Detect "Connection reset" or "Disconnected" errors
+resource "aws_cloudwatch_log_metric_filter" "connection_errors" {
+  name           = "telegram_watcher_connection_errors"
+  log_group_name = aws_cloudwatch_log_group.app_logs.name
+  pattern        = "?\"Connection reset by peer\" ?\"Disconnected from Telegram\" ?\"Max retries exhausted\" ?\"Connection error\""
+
+  metric_transformation {
+    name      = "ConnectionErrorCount"
+    namespace = "TelegramWatcher"
+    value     = "1"
+  }
+}
+
+# Step 4 — Alarm: Fire when connection errors occur
+resource "aws_cloudwatch_metric_alarm" "connection_error_alarm" {
+  alarm_name          = "telegram_watcher_connection_error"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ConnectionErrorCount"
+  namespace           = "TelegramWatcher"
+  period              = 900       #15-minute window
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Telegram Watcher lost connection to Telegram servers"
+  treat_missing_data  = "notBreaching"
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+  ok_actions    = [aws_sns_topic.alerts.arn]
+}
+
+# Step 5 — Alarm: No logs for 10 minutes means something is very wrong
+resource "aws_cloudwatch_metric_alarm" "log_silence_alarm" {
+  alarm_name          = "telegram_watcher_log_silence"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  metric_name         = "IncomingLogEvents"
+  namespace           = "AWS/Logs"
+  period              = 300       # 5-minute window
+  statistic           = "Sum"
+  threshold           = 0
+  alarm_description   = "No log events from Telegram Watcher for 10+ minutes"
+  treat_missing_data  = "breaching" # No data = problem!
+
+  dimensions = {
+    LogGroupName = aws_cloudwatch_log_group.app_logs.name
+  }
+
+  alarm_actions = [aws_sns_topic.alerts.arn]
+  ok_actions    = [aws_sns_topic.alerts.arn]
+}
+
 output "ecr_url" {
   value = aws_ecr_repository.repo.repository_url
 }
