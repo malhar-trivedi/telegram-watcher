@@ -16,6 +16,9 @@ def check_health():
 
         if age > MAX_DELAY_SECONDS:
             print(f"Error: Heartbeat is stale (Last update: {age:.1f}s ago).")
+            # Force Docker to restart the container by killing the main process
+            import signal
+            os.kill(1, signal.SIGTERM)
             sys.exit(1)
 
         print(f"Healthy: Heartbeat updated {age:.1f}s ago.")
